@@ -37,7 +37,6 @@ class GithubStarred extends IPlugin
 
     public function startSearch()
     {
-        echo "Starting search Item\n";
         $page = 0;
 
         do{
@@ -50,15 +49,12 @@ class GithubStarred extends IPlugin
 
 
                 if(count($json) == 0){
-                    echo "No downloadable content.\n";
                     break;
                 }
 
-                echo "Count: " . count($json) . "\n";
-
                 foreach($json as $index => $star){
                     $fileName = str_replace("/","-", $star->full_name) . "-" . $star->default_branch . ".zip";
-                    $filePath = self::DIR . $fileName;
+                    $filePath = self::DIR . DIRECTORY_SEPARATOR . $fileName;
                     $durl = sprintf(self::DOWNLOAD, $star->full_name);
                     $fileSize = $this->getHttpContentLength($durl);
                     $exists = (file_exists($filePath) && is_file($filePath) && $fileSize == filesize($filePath));
@@ -67,6 +63,7 @@ class GithubStarred extends IPlugin
                     $item->setStatus($exists ? Item::STAT_SKIPPED : Item::STAT_IDLE);
 
                     $this->getManager()->addItem($item);
+                    $this->getManager()->setCurrentSearch($item->getFileName());
                 }
 
             }

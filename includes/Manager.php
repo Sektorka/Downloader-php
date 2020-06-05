@@ -112,6 +112,12 @@ final class Manager{
     public function startSearch($autoStartDownload = false){
         foreach($this->plugins as $plugin){
             if($plugin instanceof IPlugin && $plugin == $this->usePlugin){
+                echo sprintf("Downloader\nPlugin: %s \nAuthor: %s\nVersion: %s\n",
+                    $plugin->getPluginName(),
+                    $plugin->getAuthorName(),
+                    $plugin->getVersion()
+                );
+
                 $plugin->startSearch();
             }
         }
@@ -219,9 +225,10 @@ final class Manager{
     private function progressFunction($curl, $downloadSize, $downloaded, $uploadSize, $uploaded){
         if($this->currentDownloadItem instanceof Item){
             $strDownloading = str_pad(
-                sprintf("\rDownloading[%d/%d][%s]%s %d%% %s/%s",
+                sprintf("\rDownloading[%d/%d => %d%%][%s]%s %d%% %s/%s",
                     $this->downloadedItemsCount,
                     count($this->notDownloadedItems),
+                    intval(($this->downloadedItemsCount / count($this->notDownloadedItems)) * 100),
                     $this->currentDownloadItem->getUrl(),
                     $this->getDots(),
                     ($downloadSize == 0 ? 0 : intval(($downloaded / $downloadSize) * 100)),
