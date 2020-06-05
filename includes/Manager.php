@@ -132,8 +132,8 @@ final class Manager{
 
         foreach($this->notDownloadedItems as $item){
             if($item instanceof Item){
-                $this->downloadItem($item);
                 $this->downloadedItemsCount++;
+                $this->downloadItem($item);
             }
         }
     }
