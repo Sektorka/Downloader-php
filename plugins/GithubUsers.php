@@ -5,26 +5,26 @@ namespace plugins;
 
 use includes\Version;
 
-class GithubStarred extends AbsGithub
+class GithubUsers extends AbsGithub
 {
     protected function getUsers(): array
     {
-        return ['Sektorka'];
+        return ['krakjoe', 'xiph', 'CacoFFF'];
     }
 
     protected function getUrl(): string
     {
-        return "https://api.github.com/users/%s/starred?page=%d&per_page=100";
+        return "https://api.github.com/users/%s/repos?page=%d&per_page=100";
     }
 
     protected function getDir(): string
     {
-        return "D:\\Downloads\\Github-starred";
+        return "D:\\Downloads\\Github-users";
     }
 
     public function getPluginName(): string
     {
-        return "GithubStarred";
+        return "GithubUsers";
     }
 
     public function getVersion(): Version

@@ -1,34 +1,30 @@
 <?php
 
+use includes\Manager;
+use JetBrains\PhpStorm\NoReturn;
+
+spl_autoload_register(callback: function ($class) {
+    @include $class . CLASSES_EXT;
+});
+
+require_once "config.php";
+
 chdir(dirname($argv[0]));
 
-function resource($file)
-{
-    return (defined('EMBEDED') ? 'res:///PHP/'.md5($file) : $file);
-}
-
-require_once resource("config.php");
-
-use \includes\Manager;
-
-try {
-    Manager::initialize($argv);
-    $manager = Manager::getInstance();
-    $manager->startSearch(true);
-
-    //ob_start(array($manager, "output"));
-    /*foreach ($manager->getPlugins() as $plugins) {
-            if ($plugins instanceof IPlugin) {
-                print "plug: " . $plugins->getPluginName() . "\n";
-            }
-        }*/
-
-}
-catch(\includes\exceptions\DownloaderException $e){
+#[NoReturn] function printException(Exception $e) {
     exit(sprintf("Error: %s\r\nCode: %d\r\nFile: %s\r\nLine: %d",
         $e->getMessage(),
         $e->getCode(),
         $e->getFile(),
         $e->getLine()
     ));
+}
+
+try {
+    Manager::initialize($argv);
+    $manager = Manager::getInstance();
+    $manager->startSearch(true);
+}
+catch(Exception $e){
+    printException($e);
 }

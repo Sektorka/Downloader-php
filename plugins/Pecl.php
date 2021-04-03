@@ -9,16 +9,15 @@ use \includes\Version;
 
 class Pecl extends IPlugin
 {
-    const DIR = "E:\\Downloads\\php-extensions";
+    const DIR = "D:\\Downloads\\php-extensions";
     const URL = "http://pecl.php.net";
-    private $version = null;
 
-    public function getPluginName()
+    public function getPluginName(): string
     {
         return "Pecl";
     }
 
-    public function getVersion()
+    public function getVersion(): Version
     {
         if($this->version == null){
             $this->version = new Version(1,0,0,0);
@@ -27,7 +26,7 @@ class Pecl extends IPlugin
         return $this->version;
     }
 
-    public function getAuthorName()
+    public function getAuthorName(): string
     {
         return "Gyurász Krisztián";
     }
@@ -37,7 +36,7 @@ class Pecl extends IPlugin
         $url = self::URL . "/package-stats.php";
         $tries = 5;
 
-        if(($error = $this->getHttpContent($url, array($this, "gotContentData"), array($this, "gotHttpHeader"))) == 0){
+        if(($error = $this->getHttpContent($url)) == 0){
             $this->decodeContent();
 
             if(preg_match_all('/><a href=\"(\/package\/[[:alnum:][:punct:]]*)\">([[:alnum:][:punct:]]*)<\/a></i', $this->content, $matches)){
@@ -50,8 +49,8 @@ class Pecl extends IPlugin
                     $this->getManager()->setCurrentSearch($name);
 
                     do{
-                        if(($error = $this->getHttpContent($url, array($this, "gotContentData"), array($this, "gotHttpHeader"))) == 0) {
-                            $this->decodeContent($this->content, $this->header);
+                        if(($error = $this->getHttpContent($url)) == 0) {
+                            $this->decodeContent();
                             if(preg_match_all('/<a href=\"\/get\/([[:alnum:][:punct:]]*\.tgz)\">/i', $this->content, $smatches)){
                                 for($j = 0; $j < count($smatches[0]); $j++){
                                     $fileName = &$smatches[1][$j];
@@ -68,9 +67,6 @@ class Pecl extends IPlugin
                             }
                             break;
                         }
-						else{
-							throw new DownloaderException(sprintf("Failed to get content from: %s", $url), $error);
-						}
                     }
                     while(--$tries > 0);
 
@@ -85,7 +81,7 @@ class Pecl extends IPlugin
         }
     }
 
-    public function hasSettings()
+    public function hasSettings(): bool
     {
         return false;
     }

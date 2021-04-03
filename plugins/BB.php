@@ -16,15 +16,14 @@ use includes\Version;
 class BB extends IPlugin
 {
     const DIR = "J:\\Zene\\BB";
-    const URL = "http://88.151.102.138/hetvegi";
-    private $version = null;
+    const URL = "http://sumeg.ferencesek.hu/hetvegi_beszedek.html";
 
-    public function getPluginName()
+    public function getPluginName(): string
     {
         return "Barsi Balázs prédikációi";
     }
 
-    public function getVersion()
+    public function getVersion(): Version
     {
         if($this->version == null){
             $this->version = new Version(1,0,0,0);
@@ -33,17 +32,17 @@ class BB extends IPlugin
         return $this->version;
     }
 
-    public function getAuthorName()
+    public function getAuthorName(): string
     {
         return "Gyurász Krisztián";
     }
 
     public function startSearch()
     {
-       if(($error = $this->getHttpContent(self::URL, array($this, "gotContentData"), array($this, "gotHttpHeader"))) == 0){
+       if(($error = $this->getHttpContent(self::URL)) == 0){
             $this->decodeContent();
 
-            if(preg_match_all('/(\\d+) <A HREF=\"\/hetvegi\/((.*?)\.mp3)\">/i', $this->content, $matches)){
+            if(preg_match_all("/<a target=\"_blank\" href=\"(( |)https:\/\/hangtar\.mariaradio\.hu\/media\/barsi-balazs\/hetvegi\/(\d{4}\.\d{2}\.\d{2})\.mp3)\">/i", $this->content, $matches)){
                 for($i = 0; $i < count($matches[0]); $i++){
                     $fileName = &$matches[2][$i];
                     $fileSize = &$matches[1][$i];
@@ -64,7 +63,7 @@ class BB extends IPlugin
         }
     }
 
-    public function hasSettings()
+    public function hasSettings(): bool
     {
         return false;
     }

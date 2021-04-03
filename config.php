@@ -1,30 +1,23 @@
 <?php
 
-spl_autoload_register(function ($class) {
-    @include resource($class . CLASSES_EXT);
-});
-
 use \includes\Version;
 
-define("DEBUG", false);
+const DEBUG = false;
+const CLASSES_EXT = ".php";
 
-define("GUI_MODULE", "wxWidgets");
-define("GUI_ENABLED", extension_loaded(GUI_MODULE));
-define("CLASSES_EXT",".php");
+const APPLICATION_NAME = "Downloader";
+define("APPLICATION_VERSION", new Version(1,1,0,0));
+const AUTHOR_NAME = "Gyurász Krisztián";
+const AUTHOR_EMAIL = "krisztian@gyurasz.eu";
 
-define("APPLICATION_NAME","Downloader");
-define("APPLICATION_VERSION", new Version(1,0,0,0));
-define("AUTHOR_NAME", "Gyurász Krisztián");
-define("AUTHOR_EMAIL", "krisztian@gyurasz.eu");
-
-define("USER_AGENT", APPLICATION_NAME . " " . APPLICATION_VERSION);
-define("COOKIES_FILE", "cookies.txt");
+const USER_AGENT = APPLICATION_NAME . " " . APPLICATION_VERSION;
+const COOKIES_FILE = "cookies.txt";
 
 //proxy
-define("PROXY_ENABLED", false);
-define("PROXY_HOST", "192.168.20.65");
-define("PROXY_PORT", 3128);
-define("PROXY_AUTHENTICATION", true);
-define("PROXY_USERNAME", "");
-define("PROXY_PASSWORD", "");
+const PROXY_ENABLED = false;
+const PROXY_HOST = "192.168.20.65";
+const PROXY_PORT = 3128;
+const PROXY_AUTHENTICATION = true;
+const PROXY_USERNAME = "";
+const PROXY_PASSWORD = "";
 

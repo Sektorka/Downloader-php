@@ -3,6 +3,7 @@
 namespace includes;
 
 use includes\exceptions\InvalidArgumentException;
+use JetBrains\PhpStorm\Pure;
 
 class Item
 {
@@ -12,12 +13,10 @@ class Item
     const STAT_SKIPPED = 4;
     const STAT_FAILED = 5;
 
-    const FILE_SIZE_NOT_REQ = -1;
+    private string $fileName, $url, $destination, $plugin;
+    private int $fileSize, $status;
 
-    private $fileName, $url, $destination,
-        $fileSize, $status, $plugin;
-
-    public function __construct($fileName, $url, $destination, $fileSize, IPlugin $plugin)
+    public function __construct(string $fileName, string $url, string $destination, int $fileSize, IPlugin $plugin)
     {
         $this->fileName = $fileName;
         $this->url = $url;
@@ -27,32 +26,27 @@ class Item
         $this->status = self::STAT_IDLE;
     }
 
-    public function getFileName()
+    public function getFileName(): string
     {
         return $this->fileName;
     }
 
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
 
-    public function getDestination()
+    public function getDestination(): string
     {
         return $this->destination;
     }
 
-    public function getFileSize()
+    public function getFileSize(): int
     {
         return $this->fileSize;
     }
 
-    public function getPlugin()
-    {
-        return $this->plugin;
-    }
-
-    public function getStatus()
+    public function getStatus(): int|string
     {
         return $this->status;
     }
@@ -65,24 +59,19 @@ class Item
         $this->status = $status;
     }
 
-    public function getStatusStr(){
-        switch($this->status){
-            case self::STAT_IDLE:
-                return "Idle";
-            case self::STAT_DOWNLOADING:
-                return "Downloading";
-            case self::STAT_DOWNLOADED:
-                return "Downloaded";
-            case self::STAT_SKIPPED:
-                return "Skipped";
-            case self::STAT_FAILED:
-                return "Failed";
-            default:
-                return "Undefined";
-        }
+    public function getStatusStr(): string
+    {
+        return match ($this->status) {
+            self::STAT_IDLE => "Idle",
+            self::STAT_DOWNLOADING => "Downloading",
+            self::STAT_DOWNLOADED => "Downloaded",
+            self::STAT_SKIPPED => "Skipped",
+            self::STAT_FAILED => "Failed",
+            default => "Undefined",
+        };
     }
 
-    public function __toString()
+    #[Pure] public function __toString(): string
     {
         return sprintf("Item\r\n{\r\n  Filename: %s\r\n  Url: %s\r\n  Destination: %s\r\n  Filesize: %s\r\n  Status: %s\r\n}",
             $this->fileName,

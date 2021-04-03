@@ -2,24 +2,26 @@
 
 namespace includes;
 
-use \includes\exceptions\DownloaderException;
-use \includes\Manager;
-use \http\Header;
+use CurlHandle;
+use JetBrains\PhpStorm\Pure;
 
 abstract class IPlugin
 {
-    public abstract function getPluginName();
-    public abstract function getVersion();
-    public abstract function getAuthorName();
+    public abstract function getPluginName(): string;
+    public abstract function getVersion(): Version;
+    public abstract function getAuthorName(): string;
     public abstract function startSearch();
-    public abstract function hasSettings();
+    public abstract function hasSettings(): bool;
     public abstract function showSettings();
 
-    protected $header = "";
-    protected $content = "";
-    private $manager = null;
+    protected array|string $header = "";
+    protected string $content = "";
+    private Manager|null $manager;
+    protected ?Version $version = null;
+    protected int $responseCode = 200;
 
-    public function getCallableName(){
+    #[Pure] public final function getCallableName(): bool|string
+    {
         $class = get_class($this);
         $pos = strrpos($class, "\\");
 
@@ -30,16 +32,13 @@ abstract class IPlugin
         $this->manager = $manager;
     }
 
-    private function setMainFrame($mainFrame){
-
-    }
-
-    public function __toString()
+    #[Pure] public function __toString(): string
     {
-        return $this->getCallableName();
+        return strval($this->getCallableName());
     }
 
-    public static final function getInitedCurl($url, $arrayOptions = null){
+    public static final function getInitedCurl($url, $arrayOptions = null): CurlHandle|resource
+    {
         $curl = curl_init();
 
         curl_setopt($curl, CURLOPT_HTTP_VERSION,   CURL_HTTP_VERSION_1_1);
@@ -72,21 +71,17 @@ abstract class IPlugin
         return $curl;
     }
 
-    protected final function parseHeader(){
-        $this->header = array_change_key_case(Header::parse($this->header));    }
-
-    protected final function decodeContent(){
+    protected final function decodeContent(): bool
+    {
         if(empty($this->header)){
             return false;
         }
 
-        $header = array_change_key_case(Header::parse($this->header));
-
-        if(!array_key_exists('content-encoding', $header)){
+        if(!array_key_exists('content-encoding', $this->header)){
             return false;
         }
 
-        $arrContentEncoding = preg_split('/ /i', $header["content-encoding"]);
+        $arrContentEncoding = preg_split('/ /i', $this->header["content-encoding"]);
 
         if(is_array($arrContentEncoding)){
             if(in_array('gzip', $arrContentEncoding)){
@@ -98,7 +93,8 @@ abstract class IPlugin
         return false;
     }
 
-    public final function getHttpContentLength($url){
+    public final function getHttpContentLength($url): int
+    {
         $this->header = "";
         $curl = self::getInitedCurl($url);
 
@@ -108,7 +104,7 @@ abstract class IPlugin
         curl_exec($curl);
         curl_close($curl);
 
-        $this->parseHeader();
+        $this->header = Manager::parseHeader($this->header);
 
         if(is_array($this->header) && array_key_exists("content-length", $this->header)){
             $size = intval($this->header["content-length"]);
@@ -120,55 +116,49 @@ abstract class IPlugin
         return $size;
     }
 
-    protected function gotHttpHeader($curl, $headerLine){
+    private function gotHttpHeader($curl, $headerLine): int
+    {
         $this->header .= $headerLine;
         return strlen($headerLine);
     }
 
-    protected function gotContentData($curl, $data){
+    private function gotContentData($curl, $data): int
+    {
         $this->content .= $data;
         return strlen($data);
     }
 
-    public final function getHttpContent($url, $writeFunction, $headerFunction = null, $arrayOptions = null){
+    protected final function getHttpContent($url, $arrayOptions = null): int
+    {
         $this->content = "";
         $this->header = "";
 
         $curl = self::getInitedCurl($url, $arrayOptions);
 
-        if(isset($headerFunction) && $headerFunction != null && is_callable($headerFunction)){
-            curl_setopt($curl, CURLOPT_HEADERFUNCTION, $headerFunction);
-        }
-
-        if(isset($writeFunction) && $writeFunction != null && is_callable($writeFunction)) {
-            curl_setopt($curl, CURLOPT_WRITEFUNCTION, $writeFunction);
-        }
-        else{
-            throw new DownloaderException((is_array($writeFunction) ? implode("::", $writeFunction) : $writeFunction) . " is not callable.");
-        }
+        curl_setopt($curl, CURLOPT_HEADERFUNCTION, array($this, "gotHttpHeader"));
+        curl_setopt($curl, CURLOPT_WRITEFUNCTION, array($this, "gotContentData"));
 
         curl_exec($curl);
+        $this->responseCode = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        $this->header = Manager::parseHeader($this->header);
         $return = curl_errno($curl);
         curl_close($curl);
 
         return $return;
     }
 
-    public final function postHttpContent($url, $postData, $writeFunction, $headerFunction = null, $arrayOptions = null){
+    /*public final function postHttpContent($url, $postData, $writeFunction, $headerFunction = null, $arrayOptions = null): int
+    {
         $arrayOptions = array(
             CURLOPT_POST => is_array($postData),
             CURLOPT_POSTFIELDS => (is_array($postData) ? $postData : array())
         );
 
-        return $this->getHttpContent($url, $writeFunction, $headerFunction, $arrayOptions);
-    }
+        return $this->getHttpContent($url, $arrayOptions);
+    }*/
 
-    protected function getManager()
+    protected function getManager(): Manager
     {
         return $this->manager;
     }
-
-    protected $running = false;
-    private $mainFrame = null;
-
 }

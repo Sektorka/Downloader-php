@@ -9,17 +9,16 @@ use \includes\Version;
 
 class Pear extends IPlugin
 {
-    const DIR = "E:\\Downloads\\php-pear-packages";
+    const DIR = "D:\\Downloads\\php-pear-packages";
     const URL = "https://pear.php.net";
 	const DOWNLOAD_URL = "https://download.pear.php.net";
-    private $version = null;
 
-    public function getPluginName()
+    public function getPluginName(): string
     {
         return "Pear";
     }
 
-    public function getVersion()
+    public function getVersion(): Version
     {
         if($this->version == null){
             $this->version = new Version(1,0,0,0);
@@ -28,7 +27,7 @@ class Pear extends IPlugin
         return $this->version;
     }
 
-    public function getAuthorName()
+    public function getAuthorName(): string
     {
         return "Gyurász Krisztián";
     }
@@ -36,9 +35,8 @@ class Pear extends IPlugin
     public function startSearch()
     {
         $url = self::URL . "/package-stats.php";
-        $tries = 5;
 
-        if(($error = $this->getHttpContent($url, array($this, "gotContentData"), array($this, "gotHttpHeader"))) == 0){
+        if(($error = $this->getHttpContent($url)) == 0){
             //$this->decodeContent($this->content, $this->header);
             $this->decodeContent();
 
@@ -48,10 +46,11 @@ class Pear extends IPlugin
 					$url = self::URL . $uri;
                     $dir = utf8_decode(self::DIR) . DIRECTORY_SEPARATOR . $packageName;
 					$this->getManager()->setCurrentSearch($packageName);
+                    $tries = 5;
 					
 					do{
-						if(($error = $this->getHttpContent($url, array($this, "gotContentData"), array($this, "gotHttpHeader"))) == 0){
-							$this->decodeContent($this->content, $this->header);
+						if(($error = $this->getHttpContent($url)) == 0){
+							$this->decodeContent();
 							
 							if(preg_match_all("/<a href=\"" . preg_quote($uri, '/') . "(.*?)\">/i", $this->content, $smatches)){
 								foreach($smatches[1] as $packageVersion){
@@ -69,14 +68,11 @@ class Pear extends IPlugin
 							}
 							break;
 						}
-						else{
-							throw new DownloaderException(sprintf("Failed to get content from: %s", $url), $error);
-						}
 					}
                     while(--$tries > 0);
 
                     if($tries <= 0){
-                        $this->getManager()->failOnSearch($name);
+                        $this->getManager()->failOnSearch($packageName);
                     }
 				}
             }
@@ -86,7 +82,7 @@ class Pear extends IPlugin
         }
     }
 
-    public function hasSettings()
+    public function hasSettings(): bool
     {
         return false;
     }

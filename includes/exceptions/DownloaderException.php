@@ -3,7 +3,9 @@
 namespace includes\exceptions;
 
 
-class DownloaderException extends \RuntimeException
+use RuntimeException;
+
+class DownloaderException extends RuntimeException
 {
 
 }
